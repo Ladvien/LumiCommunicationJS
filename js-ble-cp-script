@@ -1,0 +1,8 @@
+#!/bin/sh
+sudo cp -a /Users/user/Dropbox/js-practice/js-ble /Users/user/ladvien.github.io/_includes/snippets
+git add .
+echo 'Enter the commit message:'
+read commitMessage
+git commit -m "$commitMessage"
+git push
+read
