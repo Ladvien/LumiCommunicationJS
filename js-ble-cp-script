@@ -1,5 +1,5 @@
 #!/bin/sh
-rsync -av --exclude '.git' '.Rhistory' /Users/user/Dropbox/js-practice/js-ble /Users/user/ladvien.github.io/_includes/snippets
+rsync -av --exclude '.git' --exclude '.Rhistory' /Users/user/Dropbox/js-practice/js-ble /Users/user/ladvien.github.io/_includes/snippets
  
 cd /Users/user/Dropbox/js-practice/js-ble
 git add .
