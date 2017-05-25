@@ -1,5 +1,5 @@
 #!/bin/sh
-sudo cp -a /Users/user/Dropbox/js-practice/js-ble /Users/user/ladvien.github.io/_includes/snippets
+cp -a /Users/user/Dropbox/js-practice/js-ble /Users/user/ladvien.github.io/_includes/snippets
 
 cd /Users/user/Dropbox/js-practice/js-ble
 git add .
