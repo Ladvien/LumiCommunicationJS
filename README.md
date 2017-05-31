@@ -1,7 +1,7 @@
 # LumiCommunicationJS
 LumiCommunication re-written in JavaScript.  BluetoothLE relies on Google's Web API.
 
-# behavioralBluetooth
+# LumiCommunicationJS
 ![](http://ladvien.github.io/images/bluetoothBehaveSmall.png)
 
 An asynchronous JavaScript module to help when working with Google's Bluetooth LE Web API
