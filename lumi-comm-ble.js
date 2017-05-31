@@ -1,6 +1,7 @@
 var LumiBluetooth = (function () {
     
     // Privates
+    var pairedDevices = {};
     var onReceivedDataCallbacks = [];
     var writeCharacteristic;
     
@@ -36,6 +37,8 @@ var LumiBluetooth = (function () {
                     optionalServices: optionalServices
                 })
                 .then(device => {
+                    pairedDevices[device.name] = device;
+                    console.log(pairedDevices);
                     if (addSystemText) {
                         addSystemText('Connecting to GATT Server...');
                     }
@@ -45,7 +48,7 @@ var LumiBluetooth = (function () {
                     if (addSystemText) {
                         addSystemText('Getting Services...');
                     }
-                    return server.getPrimaryServices(primaryServicesUUID);
+                    return server.getPrimaryServices();
                 })
                 .then(services => {
                     if (addSystemText) {
@@ -71,7 +74,12 @@ var LumiBluetooth = (function () {
                             }); // End enumerating characteristics
                         })); // End queue
                     }) // End enumerating services
-                }) // End Service exploration                   
+                }). // End Service exploration                   
+            catch (error =>{
+                if(addSystemText){
+                    addSystemText(error);
+                }
+            })
         }); // End Search and Connect Promise
     } // End Search and Connect Function
 
@@ -90,9 +98,14 @@ var LumiBluetooth = (function () {
         });
     }
     
+    this.disconnectDevice = function(){
+        
+    }
+    
     return {
         addReceivedDataCallback: addReceivedDataCallback,
         searchAndConnect: searchAndConnect,
-        writeData: writeData
+        writeData: writeData,
+        disconnectDevice: disconnectDevice
     }
 })(); // End Proto
