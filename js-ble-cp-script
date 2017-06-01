@@ -1,6 +1,8 @@
 #!/bin/sh
-rsync -av --exclude '.git' --exclude '.Rhistory' /Users/user/Dropbox/js-practice/js-ble /Users/user/ladvien.github.io/_includes/snippets
- 
+rsync -av /Users/user/Dropbox/js-practice/js-ble/*.js /Users/user/ladvien.github.io/javascripts/
+rsync -av /Users/user/Dropbox/js-practice/js-ble/*.css /Users/user/ladvien.github.io/css/
+rsync -av /Users/user/Dropbox/js-practice/js-ble/*.{html, htm} /Users/user/ladvien.github.io/includes/js-ble/
+
 cd /Users/user/Dropbox/js-practice/js-ble
 git add .
 echo 'Enter the commit message:'
