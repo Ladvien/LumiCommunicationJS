@@ -38,8 +38,7 @@ function onReceivedData(event) {
 
 function onWriteButtonClick() {
 	let textToWrite = document.getElementById('textToWrite').value;
-	lumiBle.writeData(textToWrite, terminal.addSystemText)
-		.then(_ => {
+	lumiBle.writeString(textToWrite, terminal.addSystemText).then(_ => {
 			terminal.addTerminalLine(displayDOM, textToWrite, '-> ', 'sent-text');
 		})
 }

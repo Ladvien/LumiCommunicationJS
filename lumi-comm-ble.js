@@ -5,6 +5,8 @@ var LumiBluetooth = (function () {
 	var onReceivedDataCallbacks = [];
 	var writeCharacteristic;
 
+	var writeBuffer;
+
 	// Adds a function called when a BLE characteristic changes value.
 	// Mutiple callbacks may be added.
 	this.addReceivedDataCallback = function (callback) {
@@ -86,11 +88,11 @@ var LumiBluetooth = (function () {
 		}); // End Search and Connect Promise
 	} // End Search and Connect Function
 
-	this.writeString = function (data, addSystemText = null) {
+	this.writeString = async function (data, addSystemText = null) {
 		write(data, true, addSystemText);
 	}
 
-	this.writeData = function (data, addSystemText = null) {
+	this.writeData = async function (data, addSystemText = null) {
 		write(data, false, addSystemText);
 	}
 
@@ -101,7 +103,8 @@ var LumiBluetooth = (function () {
 					// Don't double encode.
 					if (string) {
 						let encoder = new TextEncoder('utf-8');
-						writeCharacteristic.writeValue(encoder.encode(data));
+						var writeData = encoder.encode(data);
+						writeLoop(writeData)
 					} else {
 						dataInUint8 = Uint8Array.from(data);
 						writeCharacteristic.writeValue(dataInUint8);
@@ -124,6 +127,17 @@ var LumiBluetooth = (function () {
 
 	this.disconnectDevice = function () {
 
+	}
+
+	var writeLoop = async function(data){
+		for(var i = 0; i < data.length; i){
+			var length = 0;
+			if(data.length < (i + 19)){ length = data.length} else { length = i + 19; }
+			var tmpWriteBfr = data.slice(i, length);
+			writeCharacteristic.writeValue(tmpWriteBfr);
+			await sleep(42);
+			i+=20;
+		}
 	}
 
 	/* Utils */
