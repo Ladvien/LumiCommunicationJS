@@ -38,7 +38,7 @@ var LumiBluetooth = (function () {
 					acceptAllDevices: true,
 					optionalServices: optionalServices
 
-				})
+				}) // After getting a device
 				.then(device => {
 					console.log(device);
 					pairedDevices[device.name] = device;
@@ -46,13 +46,13 @@ var LumiBluetooth = (function () {
 						addSystemText('Connecting to GATT Server...');
 					}
 					return device.gatt.connect();
-				})
+				}) // After connecting
 				.then(server => {
 					if (addSystemText) {
 						addSystemText('Getting Services...');
 					}
 					return server.getPrimaryServices();
-				})
+				}) // After getting services
 				.then(services => {
 					if (addSystemText) {
 						addSystemText("Found services: ");
