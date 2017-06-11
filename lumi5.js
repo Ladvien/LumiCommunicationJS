@@ -93,23 +93,16 @@ var displayHexFile = async function (numberOfChunks, data) {
 	var displayChunkSize = 1;
 	//var numberOfChunks = numberOfLines / displayChunkSize;
 
-	for (var k = 0; k < numberOfChunks; k++) {
 		for (var j = 0; j < displayChunkSize; j++) {
-//			var thisLine = (j*k * 16).toString(16) + ":  ";
 			var thisLine = "L#: " + pos + " ";
 			for (var i = 0; i < 16; i++) {
 				thisLine += data[pos];
 				thisLine += " ";
 				pos++;
 			}
-//			console.log("k " + k + " j" + j);
-//			console.log("numberOfChunks" + numberOfChunks);
-//			console.log("displayChunkSize" + displayChunkSize);
-//			console.log("pos" + pos);
 			addSystemText(thisLine, false);
 			await sleep(5);
 		}
-	}
 }
 
 
@@ -134,11 +127,11 @@ var onTerminalScroll = function(event){
 }
 
 var finishedReadingFlashFromDevice = function(){
-	addSystemText("Read da flash");
 	var data = tsb.getInstalledProgramData();
-	var numberOfLines = tsb.getInstalledProgramNumberOfPages() * 16;
+	var numberOfLines = tsb.getInstalledProgramNumberOfPages() * (tsb.getInstalledProgramNumberOfPages() * (tsb.getConnectedDevicePageSize() / 16));
 	var dataAsString = hexDataHandler.formatUint8AsString(data);
 	displayHexFile(numberOfLines, dataAsString);
+	document.getElementById("read-btn").classList.add('tsb-button-read-complete');
 }
 
 var sleep = function (ms) {
@@ -147,6 +140,11 @@ var sleep = function (ms) {
 
 var upload = function(){
 	tsb.upload();
+}
+
+var readFlash = function(){
+	addSystemText("Reading flash...")
+	tsb.readInitiated();
 }
 
 
@@ -178,4 +176,4 @@ document.getElementById('btn-write-ble').onclick = onWriteButtonClick;
 document.getElementById('file-parse-btn').addEventListener('change', fileHandler.loadFile, false);
 document.getElementById('file-upload').addEventListener('change', null, false);
 document.getElementById('terminal').addEventListener('scroll', onTerminalScroll, false);
-document.getElementById('upload-btn').onclick = upload;
+document.getElementById('read-btn').onclick = readFlash;

@@ -60,7 +60,7 @@ var TinySafeBoot = (function () {
 	var writeData = function () {};
 	var displayText = function () {};
 	var onConnectedToTSB = function () {};
-	var onFinishedReading = function() {};
+	var onFinishedReading = function () {};
 
 	// Used for routing commands on received data.
 	var CommandEnum = Object.freeze({
@@ -286,6 +286,10 @@ var TinySafeBoot = (function () {
 	}
 
 	var readInitiated = function () {
+		if(!connectedDevice){
+			console.log("Hey");
+			return false;
+		}
 		installedProgram = new InstalledProgram([], 0, []);
 		writeString("f!");
 		activeCommand = CommandEnum['waitingReadPage'];
@@ -302,7 +306,7 @@ var TinySafeBoot = (function () {
 		if (installedProgram.receivedBuffer.length === connectedDevice.pageSize) {
 			installedProgram.programData.push(...installedProgram.receivedBuffer);
 			installedProgram.numberOfPages++;
-			
+
 			if (installedProgram.receivedBuffer[bfrLength - 3] === 0xFF &&
 				installedProgram.receivedBuffer[bfrLength - 2] === 0xFF &&
 				installedProgram.receivedBuffer[bfrLength - 1] === 0xFF
@@ -433,6 +437,14 @@ var TinySafeBoot = (function () {
 		if (!writeString || !writeData) {
 			return "No write commands set";
 		}
+		activeCommand = CommandEnum['uploadInitiated']
+		commandRouting();
+	}
+
+	var readFlash = function () {
+		if (!writeString || !writeData) {
+			return "No write commands set";
+		}
 		activeCommand = CommandEnum['readInitiated']
 		commandRouting();
 	}
@@ -453,19 +465,26 @@ var TinySafeBoot = (function () {
 		tmp.set(new Uint8Array(bufferTwo), bufferOne.byteLength)
 		return tmp.buffer;
 	}
-	
-	var setOnFinishedReading = function(_onFinishedReading){
+
+	var setOnFinishedReading = function (_onFinishedReading) {
 		onFinishedReading = _onFinishedReading;
 	}
-	
-	var getInstalledProgramData = function(){
+
+	var getInstalledProgramData = function () {
 		return installedProgram.programData;
 	}
-	
-	var getInstalledProgramNumberOfPages = function(){
+
+	var getInstalledProgramNumberOfPages = function () {
 		return installedProgram.numberOfPages;
 	}
-	
+
+	var getConnectedDevicePageSize = function () {
+		if (connectedDevice.pageSize) {
+			return connectedDevice.pageSize;
+		}
+		return false;
+	}
+
 	return {
 		init: init,
 		setWriteString: setWriteString,
@@ -479,6 +498,8 @@ var TinySafeBoot = (function () {
 		upload: upload,
 		setOnFinishedReading: setOnFinishedReading,
 		getInstalledProgramData: getInstalledProgramData,
-		getInstalledProgramNumberOfPages: getInstalledProgramNumberOfPages
+		getInstalledProgramNumberOfPages: getInstalledProgramNumberOfPages,
+		getConnectedDevicePageSize: getConnectedDevicePageSize,
+		readInitiated: readInitiated
 	}
 })();

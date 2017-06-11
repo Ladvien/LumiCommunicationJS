@@ -40,6 +40,7 @@ var LumiBluetooth = (function () {
 
 				})
 				.then(device => {
+					console.log(device);
 					pairedDevices[device.name] = device;
 					if (addSystemText) {
 						addSystemText('Connecting to GATT Server...');
