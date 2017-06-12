@@ -6,8 +6,6 @@ var TinySafeBoot = (function () {
 
 	var self = this;
 
-	var dataToUpload;
-
 	function TSBDevice(
 		deviceName,
 		firmwareDate,
@@ -53,6 +51,17 @@ var TinySafeBoot = (function () {
 		this.receivedBuffer = receivedBuffer;
 	}
 	var installedProgram;
+
+	function ProgramToInstall(
+		programData,
+		pagesNeeded,
+		programDataByPage,
+	){
+		this.programData = programData;
+		this.pagesNeeded = pagesNeeded;
+		this.programDataByPage = programDataByPage;
+	}
+	var programToInstall;
 
 	// Depedency functions
 	var receivedData = function () {};
@@ -152,7 +161,7 @@ var TinySafeBoot = (function () {
 				handshakeHandling(data);
 				break;
 			case CommandEnum['uploadInitiated']:
-
+				startUpload();
 				break;
 			case CommandEnum['readInitiated']:
 				addSystemText("Connected device Flash Read Started")
@@ -286,10 +295,7 @@ var TinySafeBoot = (function () {
 	}
 
 	var readInitiated = function () {
-		if(!connectedDevice){
-			console.log("Hey");
-			return false;
-		}
+		if(!checkIfConnected()){ return false; }
 		installedProgram = new InstalledProgram([], 0, []);
 		writeString("f!");
 		activeCommand = CommandEnum['waitingReadPage'];
@@ -322,6 +328,33 @@ var TinySafeBoot = (function () {
 		}
 	}
 
+	var startUpload = function(){
+		writeString("F")
+
+	}
+
+	var prepareProgramToInstall = function(programData){
+		var pagesNeeded = Math.ceil(programData.length / connectedDevice.pageSize);
+		programToInstall = new ProgramToInstall(programData,
+												pagesNeeded,
+												[]);
+		console.log(programToInstall);
+		createPagesFromData(programToInstall);
+
+	}
+	
+	var createPagesFromData = function(_programToInstall){
+		for(var i = 0; i < _programToInstall.pagesNeeded; i++){
+			console.log(connectedDevice.pageSize);
+			var thisPage = new Uint8Array(connectedDevice.pageSize);
+			for(var j = 0; j < _programToInstall.pageSize; j++){
+				var charsAlreadyCollated = i * _programToInstall.pageSize;
+				thisPage[j] = _programToInstall.programData[charsAlreadyCollated + j];
+			}
+			_programToInstall.programDataByPage.push(thisPage);
+		}
+		console.log(_programToInstall.programDataByPage);
+	}
 
 
 	var toByteString = function (byte) {
@@ -429,33 +462,17 @@ var TinySafeBoot = (function () {
 		onConnectedToTSB = _onConnectedToTSB;
 	}
 
-	var setData = function (_data) {
-		dataToUpload = _data;
-	}
-
-	var upload = function () {
-		if (!writeString || !writeData) {
-			return "No write commands set";
-		}
+	var upload = function (programData) {
+		if(!checkIfConnected()){ return false; }
+		prepareProgramToInstall(programData);
 		activeCommand = CommandEnum['uploadInitiated']
 		commandRouting();
 	}
 
 	var readFlash = function () {
-		if (!writeString || !writeData) {
-			return "No write commands set";
-		}
+		if(!checkIfConnected()){ return false; }
 		activeCommand = CommandEnum['readInitiated']
 		commandRouting();
-	}
-
-	var writePage = function () {
-		var writeBuffer = [];
-		for (var i = 0; i < connectedDevice.pageSize; i++) {
-			writeBuffer.push(dataToUpload[connectedDevice.readIndex()]);
-			connectedDevice.incrementReadIndex(1);
-		}
-		writeData(writeBuffer);
 	}
 
 
@@ -485,6 +502,15 @@ var TinySafeBoot = (function () {
 		return false;
 	}
 
+	var checkIfConnected = function(){
+		if(connectedDevice &&
+		   writeString &&
+		   writeData){
+			return true;
+		}
+		return false;
+	}
+
 	return {
 		init: init,
 		setWriteString: setWriteString,
@@ -494,7 +520,6 @@ var TinySafeBoot = (function () {
 		getControllingSerial: getControllingSerial,
 		setDisplayText: setDisplayText,
 		setOnConnectedToTSB: setOnConnectedToTSB,
-		setData: setData,
 		upload: upload,
 		setOnFinishedReading: setOnFinishedReading,
 		getInstalledProgramData: getInstalledProgramData,

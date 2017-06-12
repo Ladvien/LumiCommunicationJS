@@ -107,7 +107,7 @@ var LumiBluetooth = (function () {
 						writeLoop(writeData)
 					} else {
 						dataInUint8 = Uint8Array.from(data);
-						writeCharacteristic.writeValue(dataInUint8);
+						writeLoop(dataInUint8);
 					}
 					resolve();
 
@@ -132,7 +132,7 @@ var LumiBluetooth = (function () {
 	var writeLoop = async function(data){
 		for(var i = 0; i < data.length; i){
 			var length = 0;
-			if(data.length < (i + 19)){ length = data.length} else { length = i + 19; }
+			if(data.length < (i + 20)){ length = data.length} else { length = i + 20; }
 			var tmpWriteBfr = data.slice(i, length);
 			writeCharacteristic.writeValue(tmpWriteBfr);
 			await sleep(42);

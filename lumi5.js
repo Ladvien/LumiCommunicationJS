@@ -27,7 +27,6 @@ function onScanButtonClick() {
 
 function onReceivedData(event) {
 	if (!tsb.getControllingSerial()) {
-		console.log(event.target.value.byteLength);
 		for (var i = 0; i < event.target.value.byteLength; i++) {
 			receivedString += String.fromCharCode(event.target.value.getUint8(i));
 		}
@@ -62,7 +61,6 @@ var onConnectedToTSB = function () {
 }
 
 var onCompletedParsingFile = function () {
-	tsb.setData(hexDataHandler.getAllData());
 	hexString = hexDataHandler.getAllDataAsString();
 	//displayHexFile(50, hexString);
 }
@@ -108,7 +106,6 @@ var displayHexFile = async function (numberOfChunks, data) {
 var onTerminalScroll = function(event){
 	
 	var childs = (event.target.childNodes);
-	console.log(childs[1].style);
 	
 	var terminalHeight = event.target.parentNode.scrollHeight;
 	var topIndex = event.target.scrollTop;
@@ -121,7 +118,7 @@ var onTerminalScroll = function(event){
 		//console.log("Bottom");
 	}
 	
-	console.log(bottomMax + ":" + bottomIndex + ":" + topIndex);
+	// console.log(bottomMax + ":" + bottomIndex + ":" + topIndex);
 	
 }
 
@@ -138,7 +135,7 @@ var sleep = function (ms) {
 }
 
 var upload = function(){
-	tsb.upload();
+	tsb.upload(hexDataHandler.getAllData());
 }
 
 var readFlash = function(){
@@ -176,3 +173,4 @@ document.getElementById('file-parse-btn').addEventListener('change', fileHandler
 document.getElementById('file-upload').addEventListener('change', null, false);
 document.getElementById('terminal').addEventListener('scroll', onTerminalScroll, false);
 document.getElementById('read-btn').onclick = readFlash;
+document.getElementById('upload-btn').onclick = upload;
