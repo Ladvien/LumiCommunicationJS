@@ -56,10 +56,12 @@ var TinySafeBoot = (function () {
 		programData,
 		pagesNeeded,
 		programDataByPage,
+		writtenPageIndex
 	){
 		this.programData = programData;
 		this.pagesNeeded = pagesNeeded;
 		this.programDataByPage = programDataByPage;
+		this.writtenPageIndex = writtenPageIndex;
 	}
 	var programToInstall;
 
@@ -79,8 +81,9 @@ var TinySafeBoot = (function () {
 		readInitiated: 4,
 		waitingReadPage: 5,
 		finishedReading: 6,
-		writingPages: 7,
-		failed: 8
+		waitingForPageRequest: 7,
+		waitingOnCompleteWriteConfirmation: 8,
+		failed: 9
 	});
 	var activeCommand = CommandEnum['none'];
 	var commandKeys = Object.keys(CommandEnum);
@@ -170,7 +173,10 @@ var TinySafeBoot = (function () {
 			case CommandEnum['waitingReadPage']:
 				waitingReadPage(data);
 				break;
-			case CommandEnum['writingPages']:
+			case CommandEnum['waitingForPageRequest']:
+				writePage(data);
+				break;
+			case CommandEnum['waitingOnCompleteWriteConfirmation']:
 
 				break;
 			case CommandEnum['finishedReading']:
@@ -328,34 +334,50 @@ var TinySafeBoot = (function () {
 		}
 	}
 
-	var startUpload = function(){
-		writeString("F")
-
+	var upload = function (programData) {
+		if(!checkIfConnected()){ return false; }
+		prepareProgramToInstall(programData);
+		activeCommand = CommandEnum['uploadInitiated']
+		commandRouting();
 	}
 
 	var prepareProgramToInstall = function(programData){
 		var pagesNeeded = Math.ceil(programData.length / connectedDevice.pageSize);
 		programToInstall = new ProgramToInstall(programData,
 												pagesNeeded,
-												[]);
-		console.log(programToInstall);
+												[],
+												0);
 		createPagesFromData(programToInstall);
 
 	}
 	
 	var createPagesFromData = function(_programToInstall){
 		for(var i = 0; i < _programToInstall.pagesNeeded; i++){
-			console.log(connectedDevice.pageSize);
-			var thisPage = new Uint8Array(connectedDevice.pageSize);
-			for(var j = 0; j < _programToInstall.pageSize; j++){
-				var charsAlreadyCollated = i * _programToInstall.pageSize;
-				thisPage[j] = _programToInstall.programData[charsAlreadyCollated + j];
-			}
+			
+			// Get a page based upon device size and save it in an array of pages.
+			var thisPage = _programToInstall.programData.slice(
+				connectedDevice.pageSize * i,  
+				(connectedDevice.pageSize * i + connectedDevice.pageSize));
+
 			_programToInstall.programDataByPage.push(thisPage);
 		}
-		console.log(_programToInstall.programDataByPage);
+	}
+	
+	var startUpload = function(){
+		writeString("F")
+		activeCommand = CommandEnum['waitingForPageRequest'];
 	}
 
+	var writePage = function(data){
+		console.log(data);
+		if(programToInstall.writtenPageIndex === programToInstall.pagesNeeded){
+			writeString("?");
+			activeCommand = CommandEnum['waitingOnCompleteWriteConfirmation']
+		}
+		writeString("!");
+		writeData(programToInstall.programDataByPage[programToInstall.writtenPageIndex]);
+		writeData.writtenPageIndex++;
+	}
 
 	var toByteString = function (byte) {
 		return ('0' + (byte & 0xFF).toString(16)).slice(-2).toUpperCase();
@@ -460,13 +482,6 @@ var TinySafeBoot = (function () {
 
 	var setOnConnectedToTSB = function (_onConnectedToTSB) {
 		onConnectedToTSB = _onConnectedToTSB;
-	}
-
-	var upload = function (programData) {
-		if(!checkIfConnected()){ return false; }
-		prepareProgramToInstall(programData);
-		activeCommand = CommandEnum['uploadInitiated']
-		commandRouting();
 	}
 
 	var readFlash = function () {

@@ -4,8 +4,8 @@ var LumiBluetooth = (function () {
 	var pairedDevices = {};
 	var onReceivedDataCallbacks = [];
 	var writeCharacteristic;
-
 	var writeBuffer;
+	var writing = false;
 
 	// Adds a function called when a BLE characteristic changes value.
 	// Mutiple callbacks may be added.
@@ -42,7 +42,6 @@ var LumiBluetooth = (function () {
 
 				}) // After getting a device
 				.then(device => {
-					console.log(device);
 					pairedDevices[device.name] = device;
 					if (addSystemText) {
 						addSystemText('Connecting to GATT Server...');
@@ -104,13 +103,18 @@ var LumiBluetooth = (function () {
 					if (string) {
 						let encoder = new TextEncoder('utf-8');
 						var writeData = encoder.encode(data);
-						writeLoop(writeData)
+						writeBuffer = appendUint8Buffer(writeBuffer, writeData);
+						if(!writing){
+							writeLoop(writeData);
+						}
 					} else {
 						dataInUint8 = Uint8Array.from(data);
-						writeLoop(dataInUint8);
+						writeBuffer = appendUint8Buffer(writeBuffer, dataInUint8);
+						if(!writing){
+							writeLoop(writeData);
+						}
 					}
 					resolve();
-
 				} else {
 					reject("No write characteristic")
 				}
@@ -130,14 +134,19 @@ var LumiBluetooth = (function () {
 	}
 
 	var writeLoop = async function(data){
-		for(var i = 0; i < data.length; i){
+		writing = true;
+		console.log(writeBuffer);
+		for(var i = 0; i < writeBuffer.length; i){
 			var length = 0;
-			if(data.length < (i + 20)){ length = data.length} else { length = i + 20; }
-			var tmpWriteBfr = data.slice(i, length);
+			if(writeBuffer.length < (i + 20)){ length = writeBuffer.length} else { length = i + 20; }
+			var tmpWriteBfr = writeBuffer.slice(i, length);
+			console.log(tmpWriteBfr);
 			writeCharacteristic.writeValue(tmpWriteBfr);
 			await sleep(42);
 			i+=20;
 		}
+		writeBuffer = null;
+		writing = false;
 	}
 
 	/* Utils */
@@ -151,6 +160,13 @@ var LumiBluetooth = (function () {
 		return '[' + supportedProperties.join(', ') + ']';
 	}
 
+	var appendUint8Buffer = function (bufferOne, bufferTwo) {
+		if(!bufferOne){return bufferTwo;}
+		var tmp = new Uint8Array(bufferOne.byteLength + bufferTwo.byteLength);
+		tmp.set(new Uint8Array(bufferOne), 0);
+		tmp.set(new Uint8Array(bufferTwo), bufferOne.byteLength)
+		return tmp.buffer;
+	}
 
 	return {
 		addReceivedDataCallback: addReceivedDataCallback,
