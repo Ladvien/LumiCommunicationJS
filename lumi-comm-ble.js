@@ -4,8 +4,9 @@ var LumiBluetooth = (function () {
 	var pairedDevices = {};
 	var onReceivedDataCallbacks = [];
 	var writeCharacteristic;
-	var writeBuffer;
+	var writeBuffer = [];
 	var writing = false;
+	var napsSinceWrite = 0;
 
 	// Adds a function called when a BLE characteristic changes value.
 	// Mutiple callbacks may be added.
@@ -103,16 +104,15 @@ var LumiBluetooth = (function () {
 					if (string) {
 						let encoder = new TextEncoder('utf-8');
 						var writeData = encoder.encode(data);
-						writeBuffer = appendUint8Buffer(writeBuffer, writeData);
-						if(!writing){
-							writeLoop(writeData);
-						}
+						writeBuffer.push.apply(writeBuffer, writeData); // test
+						// writeBuffer = appendUint8Buffer(writeBuffer, writeData);
+						writeLoop(writeData);
 					} else {
-						dataInUint8 = Uint8Array.from(data);
-						writeBuffer = appendUint8Buffer(writeBuffer, dataInUint8);
-						if(!writing){
-							writeLoop(writeData);
-						}
+						writeData = Array.from(data);
+						// dataInUint8 = Uint8Array.from(data);
+						writeBuffer.push.apply(writeBuffer, writeData);
+						// writeBuffer = appendUint8Buffer(writeBuffer, dataInUint8);
+						writeLoop(writeData);
 					}
 					resolve();
 				} else {
@@ -133,20 +133,74 @@ var LumiBluetooth = (function () {
 
 	}
 
+	// Important information on write queue
+	// https://github.com/WebBluetoothCG/web-bluetooth/issues/188
+	// 
+
+
 	var writeLoop = async function(data){
-		writing = true;
-		console.log(writeBuffer);
-		for(var i = 0; i < writeBuffer.length; i){
-			var length = 0;
-			if(writeBuffer.length < (i + 20)){ length = writeBuffer.length} else { length = i + 20; }
-			var tmpWriteBfr = writeBuffer.slice(i, length);
-			console.log(tmpWriteBfr);
-			writeCharacteristic.writeValue(tmpWriteBfr);
-			await sleep(42);
-			i+=20;
+		// writing = true;
+		// for(var i = 0; i < writeBuffer.length; i){
+		// 	var length = 0;
+		// 	// if(writeBuffer.length < (i + 20)){ length = writeBuffer.length} else { length = i + 20; }
+		// 	if(writeBuffer.length < 20){ length = writeBuffer.length; } else { length = 20; }
+		// 	var tmpWriteBfr = Uint8Array.from(writeBuffer.splice(0, length));
+		// 	console.log(tmpWriteBfr);
+		// 	writeCharacteristic.writeValue(tmp=WriteBfr);
+		// 	await sleep(42);
+		// 	i+=20;
+		// }
+
+		// 1. Create a rollback buffer, in case there is an error writing.
+		// 2. Check if the buffer is empty.
+		// 3. If writing is currently in progress, wait.  But not forever.
+		//	  After three naps, assume write is complete.
+		// 4. Limit the write to the HM-10 TX buffer (20 bytes)
+			// TODO Make the TX buffer size mutable.  For example, the 
+			// HM-16 has a TX buffer of 256
+		// 5. Cut a chunk off the writeBuffer for writing.
+		// 6. Attempt to write the value to the device
+		// 7. Once the write is complete, set the writing flag to false.
+			// NOTE The write callback doesn't seem to be working.
+		// 8. If there is an error restore the buffer.
+
+		var mementoWriteBuffer = [];
+		while(writeBuffer.length > 0){
+			if(writing === false){
+				writing = true;
+				var length = 0;
+				if(writeBuffer.length < 20){ length = writeBuffer.length; } else { length = 20; }
+				mementoWriteBuffer = writeBuffer;
+				var tmpWriteBfr = Uint8Array.from(writeBuffer.splice(0, length));
+				console.log("TX: " + tmpWriteBfr);
+				writeCharacteristic.writeValue(tmpWriteBfr).
+				then(blah => {
+					writing = false;
+				}).catch(error => {
+					writeBuffer = mementoWriteBuffer;
+					writing = false;
+					console.log("BLE Write Error: ");
+					console.log(error);
+				});
+			} else {
+				await bleWriteThrottling(42);
+			}
+			
 		}
-		writeBuffer = null;
-		writing = false;
+		writeBuffer = [];
+	}
+
+	var bleWriteThrottling = async function(ms){
+		// 1. Sleep a bit
+		// 2. Count naps
+		// 3. Too many naps, then assume BLE writing is done.
+		await sleep(ms);
+		napsSinceWrite++;
+		if(napsSinceWrite > 2){
+			writing = false;
+			napsSinceWrite = 0;
+		}
+
 	}
 
 	/* Utils */

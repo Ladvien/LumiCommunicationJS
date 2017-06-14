@@ -147,10 +147,12 @@ var TinySafeBoot = (function () {
 		// TODO: Handle received data better.  
 		// NOTE: the TX buffer for the HM-1X is only 20 bytes.  
 		// But other devices differ.
+
 		var receivedData = new Uint8Array(event.target.value.byteLength);
 		for (var i = 0; i < event.target.value.byteLength; i++) {
 			receivedData[i] = event.target.value.getUint8(i);
 		}
+		console.log("RX: " + receivedData);
 		if (activeCommand !== CommandEnum['none']) {
 			commandRouting(receivedData);
 		}
@@ -369,7 +371,6 @@ var TinySafeBoot = (function () {
 	}
 
 	var writePage = function(data){
-		console.log(data);
 		if(programToInstall.writtenPageIndex === programToInstall.pagesNeeded){
 			writeString("?");
 			activeCommand = CommandEnum['waitingOnCompleteWriteConfirmation']
