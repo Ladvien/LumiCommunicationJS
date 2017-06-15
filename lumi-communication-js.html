@@ -1,16 +1,21 @@
 <link rel="stylesheet" href="js-ble.css" media="screen" type="text/css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <div class="container">
-	<form>
-		<fieldset class="ble-form">
-			<div>
-				<label for="name">Service ID: </label>
-				<input type="text" id="optionalServices" name="service" value="0xFFE0">
-			</div>
-		</fieldset>
-	</form>
-	<div class="container" style="margin: 5px;"></div>
+	<div>
+		<div>
+			<label for="optionalServices">Service ID: </label>
+			<input type="text" id="optionalServices" name="service" value="0xFFE0">
+		</div>
+		<div>
+			<label for="pin">Pin #: </label>
+			<input type="text" id="resetPinNumber" name="resetPinNumber" value="">
+			<button class="select-reset-pin-btn" id="set-reset-pin-btn">Set Reset Button</button>
+		</div>
+	</div>
 </div>
+<br>
+<br>
+<br>
 <div class="grid-container outline">
 	<div class="row">
 		<div class="terminal col-6" id="terminal"></div>
@@ -18,7 +23,6 @@
 			<button class="send-button" id="btn-write-ble">Send</button>
 			<input type="text" id="textToWrite" name="text-to-write" value="AT+NAME?">
 		</div>
-
 	</div>
 </div>
 <div class="grid-container outline">

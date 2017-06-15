@@ -28,6 +28,22 @@
 	float: left;
 }
 
+.select-reset-pin-btn{
+	background-color: #008CBA;
+	/* Green */
+	border: none;
+	color: white;
+	padding: 10px;
+	text-align: center;
+	text-decoration: none;
+	/*	display: inline-block;*/
+	font-size: 16px;
+	border-radius: 12px;
+	vertical-align: middle;
+	width: 25%;
+	float: left;
+}
+
 .ble-form {
 	border: #619647;
 }

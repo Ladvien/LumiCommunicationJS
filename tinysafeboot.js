@@ -5,6 +5,7 @@
 var TinySafeBoot = (function () {
 
 	var self = this;
+	var resetPin = 2;
 
 	function TSBDevice(
 		deviceName,
@@ -117,11 +118,11 @@ var TinySafeBoot = (function () {
 		// the Atmega or ATtiny.  Then, TSB handshake is sent.
 		activeCommand = CommandEnum['handshake'];
 		startCommandTimeoutTimer(3000);
-		writeString("AT+PIO31");
+		writeString("AT+PIO" + resetPin + "1");
 		await sleep(200);
-		writeString("AT+PIO30");
+		writeString("AT+PIO" + resetPin + "0");
 		await sleep(1200);
-		writeString("AT+PIO31");
+		writeString("AT+PIO" + resetPin + "1");
 		await sleep(1200);
 		writeString("@@@");
 	}
@@ -527,6 +528,14 @@ var TinySafeBoot = (function () {
 		return false;
 	}
 
+	var setResetPin = function(pinNumber){
+		resetPin = pinNumber;
+	}
+
+	var getResetPinNumber = function(){
+		return resetPin;
+	}
+
 	return {
 		init: init,
 		setWriteString: setWriteString,
@@ -541,6 +550,8 @@ var TinySafeBoot = (function () {
 		getInstalledProgramData: getInstalledProgramData,
 		getInstalledProgramNumberOfPages: getInstalledProgramNumberOfPages,
 		getConnectedDevicePageSize: getConnectedDevicePageSize,
-		readInitiated: readInitiated
+		readInitiated: readInitiated,
+		setResetPin: setResetPin,
+		getResetPinNumber: getResetPinNumber
 	}
 })();

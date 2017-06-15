@@ -12,6 +12,7 @@ var hexString;
 
 let primaryService = document.getElementById('optionalServices').value;
 
+
 function onScanButtonClick() {
 	lumiBle.searchAndConnect(parseInt(primaryService), terminal.addSystemText).
 	then(() => {
@@ -36,12 +37,11 @@ function onReceivedData(event) {
 }
 
 function onWriteButtonClick() {
-	let textToWrite = document.getElementById('textToWrite').value;
-	lumiBle.writeString(textToWrite, terminal.addSystemText).then(_ => {
-			terminal.addTerminalLine(displayDOM, textToWrite, '-> ', 'sent-text');
-		})
+	 let textToWrite = document.getElementById('textToWrite').value;
+	 lumiBle.writeString(textToWrite, terminal.addSystemText).then(_ => {
+	 		terminal.addTerminalLine(displayDOM, textToWrite, '-> ', 'sent-text');
+	 	})
 }
-
 
 var fileFinishedLoading = function (event) {
 	file = event.target;
@@ -143,6 +143,13 @@ var readFlash = function(){
 	tsb.readInitiated();
 }
 
+function changeResetPin(){
+	let resetPinNumber = document.getElementById('resetPinNumber').value;
+	tsb.setResetPin(parseInt(resetPinNumber));
+	document.getElementById('resetPinNumber').value = tsb.getResetPinNumber();
+}
+
+
 
 // Setup the display terminal
 var terminal = Terminal;
@@ -174,3 +181,4 @@ document.getElementById('file-upload').addEventListener('change', null, false);
 document.getElementById('terminal').addEventListener('scroll', onTerminalScroll, false);
 document.getElementById('read-btn').onclick = readFlash;
 document.getElementById('upload-btn').onclick = upload;
+document.getElementById('set-reset-pin-btn').onclick = changeResetPin;
