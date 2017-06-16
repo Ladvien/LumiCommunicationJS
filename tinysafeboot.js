@@ -364,6 +364,18 @@ var TinySafeBoot = (function () {
 
 			_programToInstall.programDataByPage.push(thisPage);
 		}
+		addLastPagePadding(_programToInstall);
+	}
+
+	var addLastPagePadding = function(_programToInstall){
+		var paddingNeeded = connectedDevice.pageSize * _programToInstall.pagesNeeded - 
+							_programToInstall.programData.length;
+		var lastPageNumber = _programToInstall.pagesNeeded - 1;
+		// _programToInstall.programDataByPage[_programToInstall.pagesNeeded].push(Array(pagesNeeded).fill(255));
+		var fillArr = Array(paddingNeeded).fill(255);
+		console.log(_programToInstall.programDataByPage[lastPageNumber]);
+		_programToInstall.programDataByPage[lastPageNumber] = _programToInstall.programDataByPage[lastPageNumber].concat(fillArr);
+		console.log(_programToInstall.programDataByPage[lastPageNumber]);
 	}
 	
 	var startUpload = function(){
@@ -378,7 +390,7 @@ var TinySafeBoot = (function () {
 		}
 		writeString("!");
 		writeData(programToInstall.programDataByPage[programToInstall.writtenPageIndex]);
-		writeData.writtenPageIndex++;
+		programToInstall.writtenPageIndex++;
 	}
 
 	var toByteString = function (byte) {

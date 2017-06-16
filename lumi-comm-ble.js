@@ -181,6 +181,7 @@ var LumiBluetooth = (function () {
 					writing = false;
 					console.log("BLE Write Error: ");
 					console.log(error);
+					delayAndWriteAgain();
 				});
 			} else {
 				await bleWriteThrottling(42);
@@ -188,6 +189,10 @@ var LumiBluetooth = (function () {
 			
 		}
 		writeBuffer = [];
+	}
+
+	var delayAndWriteAgain = function(){
+		setTimeout(writeLoop(), 100);
 	}
 
 	var bleWriteThrottling = async function(ms){
