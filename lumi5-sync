@@ -4,4 +4,4 @@ echo '****************************************************'
 echo '* Updating the Lumi5 Project                       *'
 echo '****************************************************'
 
-sudo scp /Users/user/ladvien.github.io/projects/lumi5/* root@ladvien.com:/usr/share/nginx/html/projects/lumi5
+sudo rsync -avz /Users/user/Dropbox/js-practice/js-ble/* root@ladvien.com:/usr/share/nginx/html/projects/lumi5
